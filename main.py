@@ -14,7 +14,17 @@ class QRcode_frame():
         self.err_corr = err_cor
         self.initialize()
         self.error_correction()
+        self.mask()
         self.inscript()
+    
+    def mask(self):
+        self.qr_code[12][6] = 1
+        self.qr_code[12][7] = 0
+        self.qr_code[12][8] = 1
+        
+        self.qr_code[self.size-9][12] = 1
+        self.qr_code[self.size-8][12] = 0
+        self.qr_code[self.size-7][12] = 1
     
     def error_correction(self):
         match self.err_corr:
@@ -100,36 +110,56 @@ class QRcode_frame():
                         else:
                             color = 1
 
-    def inscript(self): # needs to be finished
-        move_flag = "flat"
-        elev_flag = True # True for movci
+    def inscript(self): # need to add mask pattern
         
+        bit_length = len(self.raw_data)-1
+        bit_index = 0
+        move_flag = "flat"
+        elev_flag = True # True for moving up
         x, y = self.size-5, self.size-5
-        for bit in self.raw_data:
-            match move_flag:
-                case "left":
-                    if self.qr_code[y][x] == None:
-                        self.qr_code[y][x] = bit
-                    x -= 1
-                    if elev_flag:
-                        move_flag = "up"
-                    else:
-                        move_flag "down"
+        while bit_index < bit_length:
+            if y in range(4, self.size-4):
+                match move_flag:
+                    case "flat":
+                        if self.qr_code[y][x] == None:
+                            self.qr_code[y][x] = self.raw_data[bit_index]
+                            bit_index += 1
+                        x -= 1
+                        if elev_flag:
+                            move_flag = "up"
+                        else:
+                            move_flag = "down"
+                        
+                    case "up":
+                        if self.qr_code[y][x] == None:
+                            self.qr_code[y][x] = self.raw_data[bit_index]
+                            bit_index += 1
+                        x += 1
+                        y -= 1
+                        move_flag = "flat"
                     
-                case "up":
-                    if self.qr_code[y][x] == None:
-                        self.qr_code[y][x] = bit
-                    x += 1
-                    y -= 1
-                    move_flag = "left"
-                
-                case "down":
-                    if self.qr_code[y][x] == None:
-                        self.qr_code[y][x] = bit
-                    x += 1
+                    case "down":
+                        if self.qr_code[y][x] == None:
+                            self.qr_code[y][x] = self.raw_data[bit_index]
+                            bit_index += 1
+                        x += 1
+                        y += 1
+                        move_flag = "flat"
+            elif x < 4:
+                print("too much data (rest got cutoff)")
+                return
+            else:
+                if elev_flag:
+                    elev_flag = False
                     y += 1
-                    move_flag = "left"
+                else:
+                    elev_flag = True
+                    y -= 1
+                x -= 2
+                move_flag = "flat"
+                
+                
                 
 if __name__ == "__main__":
-    code = QRcode_frame([1,0,1,0,1,0,1,0,1], 1)
+    code = QRcode_frame([-1*(x % 3)-1 for x in range(501)], 1)
     Draw.draw(code.qr_code, 10)
