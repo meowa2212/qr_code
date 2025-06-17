@@ -12,16 +12,23 @@ class Draw():
         height = len(data)
         width = len(data[0])
         image = np.zeros((height*px_size, width*px_size, 3), dtype=np.uint8)
-
+        
         for i in range(height*px_size):
             for j in range(width*px_size):
-                if data[i//px_size][j//px_size] == 0:
+                # black/white
+                if data[i//px_size][j//px_size] == 0: # white
                     image[i,j] = [255,255,255]
-                elif data[i//px_size][j//px_size] == 1:
+                elif data[i//px_size][j//px_size] == 1: # black
                     image[i,j] = [0,0,0]
-                elif data[i//px_size][j//px_size] == -1:
+                # debugging    
+                elif data[i//px_size][j//px_size] == -1: # blue
                     image[i,j] = [0,0,255]
+                elif data[i//px_size][j//px_size] == -2: # green
+                    image[i,j] = [0,255,0]
+                elif data[i//px_size][j//px_size] == -3: # yellow
+                    image[i,j] = [255,255,0]
+                # blank  
                 else:
-                    image[i,j] = [255,0,0]
+                    image[i,j] = [255,0,0] # red
                     
         plt.imsave(file_path, image)
